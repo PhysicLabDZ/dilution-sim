@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>التخفيف المتسلسل — الحبيبة لا تُقسَّم</title>
 <style>
-  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;-webkit-tap-highlight-color:transparent;user-select:none}
+  html,body{margin:0;height:100%;background:linear-gradient(#fdfefe,#dfe5ec);overflow:hidden;font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",sans-serif;-webkit-tap-highlight-color:transparent;user-select:none}
   #stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(100vw,177.78vh);aspect-ratio:16/9;container-type:size;background:#2a5d9a}
   canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   #msg{position:absolute;top:2.5cqh;left:50%;transform:translateX(-50%);max-width:70cqw;text-align:center;
@@ -35,8 +35,10 @@
   .lb{position:absolute;transform:translate(-50%,-50%);border:0;font:inherit;font-size:4cqh;color:#fff;background:rgba(10,25,45,.88);padding:1.4cqh 2.4cqw;border-radius:2.4cqh;cursor:pointer}
   .lb:disabled{opacity:.35}
   #lcap{position:absolute;left:50%;top:85%;transform:translate(-50%,-50%);background:#fff;color:#12324f;font-size:4.2cqh;font-weight:700;padding:1cqh 3cqw;border-radius:3cqh;white-space:nowrap;pointer-events:none}
-  #rot{display:none;position:fixed;top:0;left:0;right:0;z-index:9;background:#d8791b;color:#fff;text-align:center;font-size:16px;padding:10px}
-  @media (orientation:portrait){#rot{display:block}}
+  /* هاتف أو لوحي بوضع رأسي: يُدار المسرح 90° ليملأ الطول الأكبر للشاشة */
+  @media (orientation:portrait) and (pointer:coarse){
+    #stage{width:min(100vh,177.78vw);transform:translate(-50%,-50%) rotate(90deg)}
+  }
   #panel{display:none;position:absolute;inset:0;z-index:8;background:rgba(0,0,0,.62);align-items:center;justify-content:center}
   #panel.open{display:flex}
   .card{background:#12324f;color:#fff;border-radius:3cqh;padding:3cqh 3.5cqw;width:64cqw;font-size:3.8cqh}
@@ -52,7 +54,6 @@
 </style>
 </head>
 <body>
-<div id="rot">أدر الهاتف أفقيًا لعرض المحاكي كاملًا</div>
 <div id="stage">
   <canvas id="cv" width="1672" height="941"></canvas>
   <div id="msg"></div>
