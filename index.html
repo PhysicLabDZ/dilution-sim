@@ -51,6 +51,11 @@
   .card #pApply{background:#d8791b;font-weight:700}
   .hint{font-size:3.1cqh;color:#cfe3f7;margin:1.2cqh 0;line-height:1.55}
   #info{color:#cfe3f7;font-size:3.1cqh;padding:0 .6cqw}
+  button{transition:filter .12s}
+  button:hover:not(:disabled){filter:brightness(1.18)}
+  button:disabled{cursor:not-allowed}
+  .hit:hover{background:rgba(255,255,255,.13);border-radius:2cqh}
+  @media (pointer:fine){ #bar button{font-size:3.8cqh} #info{font-size:3.3cqh} }
 </style>
 </head>
 <body>
@@ -77,6 +82,7 @@
     <button id="lensBtn">عدسة</button>
     <button id="setBtn">⚙ إعدادات</button>
     <button id="reset">إعادة</button>
+    <button id="fsBtn">⛶</button>
     <span id="info"></span>
   </div>
 </div>
@@ -100,13 +106,13 @@ const pills=[];
 CX.forEach((cx,i)=>{
   const p=document.createElement('div'); p.className='pill'; p.style.left=(cx/W*100)+'%'; $('overlay').appendChild(p); pills.push(p);
   const h=document.createElement('div'); h.className='hit';
-  h.style.cssText=`left:${(cx-62)/W*100}%;top:27%;width:${124/W*100}%;height:59%`; h.onclick=()=>openLens(i); $('overlay').appendChild(h);
+  h.style.cssText=`left:${(cx-62)/W*100}%;top:27%;width:${124/W*100}%;height:59%`; h.title='تكبير حبيبات هذا الأنبوب'; h.onclick=()=>openLens(i); $('overlay').appendChild(h);
   const t=document.createElement('div'); t.className='tag'; t.style.left=(cx/W*100)+'%'; t.textContent=i+1; $('overlay').appendChild(t);
 });
 
 function msg(t){ $('msg').textContent=t; }
 const mic=document.createElement('div'); mic.className='hit';
-mic.style.cssText='left:4.8%;top:7.4%;width:13.7%;height:45%'; mic.onclick=()=>openLens(Math.min(step,CX.length-1)); $('overlay').appendChild(mic);
+mic.style.cssText='left:4.8%;top:7.4%;width:13.7%;height:45%'; mic.title='المجهر: تكبير حبيبات الأنبوب الحالي'; mic.onclick=()=>openLens(Math.min(step,CX.length-1)); $('overlay').appendChild(mic);
 
 // العدسة المجهرية: تُظهر كل حبيبات الأنبوب مكبّرة
 let lensTube=-1;
@@ -292,6 +298,36 @@ try{
   const o=JSON.parse(localStorage.getItem('dil')||'null');
   if(o){ if(o.N0>=4&&o.N0<=400) N0=o.N0|0; if(o.RATIO>=.1&&o.RATIO<=.9) RATIO=o.RATIO; if(o.mode==='fixed'||o.mode==='random') mode=o.mode; }
 }catch(e){}
+
+// ملء الشاشة والاختصارات (تعتمد على e.code فتعمل مع أي تخطيط لوحة مفاتيح)
+$('go').title='انقل عيّنة 10 مل إلى الأنبوب التالي (مسافة)';
+$('lensBtn').title='عدسة مجهرية (L)';
+$('setBtn').title='إعدادات الأستاذ (S)';
+$('reset').title='إعادة التجربة من البداية';
+$('fsBtn').title='ملء الشاشة (F)';
+function toggleFS(){
+  const d=document;
+  if(d.fullscreenElement) d.exitFullscreen();
+  else if(d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(()=>{});
+}
+if(!document.documentElement.requestFullscreen) $('fsBtn').style.display='none';
+$('fsBtn').onclick=toggleFS;
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey) return;
+  const panelOpen=$('panel').classList.contains('open');
+  if(e.code==='Escape'){ if(panelOpen) $('panel').classList.remove('open'); else if(lensTube>=0) closeLens(); return; }
+  if(panelOpen) return;
+  if(e.code==='KeyF'){ toggleFS(); return; }
+  if(e.code==='KeyS'){ $('setBtn').click(); return; }
+  if(e.code==='Space'){ e.preventDefault(); transfer(); return; }
+  if(lensTube>=0){
+    if(e.code==='ArrowLeft'&&lensTube<CX.length-1){ lensTube++; lensUI(); }
+    else if(e.code==='ArrowRight'&&lensTube>0){ lensTube--; lensUI(); }
+    else if(e.code==='KeyL') closeLens();
+  }else if(e.code==='KeyL') openLens(Math.min(step,CX.length-1));
+});
+document.addEventListener('keyup',e=>{ if(e.code==='Space') e.preventDefault(); });
+document.addEventListener('click',e=>{ if(e.target.tagName==='BUTTON') e.target.blur(); });
 
 reset();
 requestAnimationFrame(loop);
